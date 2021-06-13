@@ -5,8 +5,6 @@ const twitterBtn = document.getElementById('twitter')
 const newQuoteBtn = document.getElementById('new-quote')
 const loader = document.getElementById('loader')
 
-let quotes = []
-
 // loading
 function loading() {
     loader.hidden = false
@@ -15,53 +13,47 @@ function loading() {
 
 // loading finished
 function complete() {
-    quoteContainer.hidden = false
     loader.hidden = true
+    quoteContainer.hidden = false
 }
 
-// fetch all quotes
-async function fetchQuotes() {
-    loading()
-    const url = 'https://type.fit/api/quotes'
+// fetch quote from api
+async function fetchQuote() {
+    // api url
+    const url = 'https://api.quotable.io/random'
     try {
+        // send request to api
         const response = await fetch(url)
-        quotes = await response.json()
-        newQuote()
+        // format response to json
+        return await response.json()
     } catch (error) {
-        console.log({ fetchQuotesError: error.message })
+        console.error({ fetchQuoteError: error.message })
     }
 }
 
-// fetch a single quote
-function fetchQuote() {
-    // Pick a random quote from quotes array
-    const index = Math.floor(Math.random() * quotes.length)
-    return quotes[index]
-}
-
 // set quote
-function newQuote() {
+async function newQuote() {
     loading()
-    // fetch a single quote
-    const quote = fetchQuote()
-    // set author name and check if author field is blank and replace it with Unknown
+    // fetch a random quote
+    const quote = await fetchQuote()
+    console.log({ quote })
+    // set author name and check if author is null
     quoteAuthor.textContent = quote.author || 'Unknown'
-    // check quote length to determine styling
-    if (quote.text.length > 100) {
+    // set quote style considering quote length
+    if (quote.length > 100) {
         quoteText.classList.add('long-quote')
     } else {
         quoteText.classList.remove('long-quote')
     }
-    // set quote and hide loader
-    quoteText.textContent = quote.text
+    // set quote, hide loader
+    quoteText.textContent = quote.content
     complete()
 }
 
-// Tweet quote
+// tweet quote
 function tweetQuote() {
-    // configure tweet url
     const url = `https://twitter.com/intent/tweet?text=${quoteText.textContent} - ${quoteAuthor.textContent}`
-    // open twitter page
+    // open in new window
     window.open(url, '_blank')
 }
 
@@ -69,5 +61,4 @@ function tweetQuote() {
 newQuoteBtn.addEventListener('click', newQuote)
 twitterBtn.addEventListener('click', tweetQuote)
 
-// Load Quotes
-fetchQuotes()
+newQuote()
